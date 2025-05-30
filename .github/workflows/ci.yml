@@ -13,20 +13,6 @@ jobs:
       id-token: write
       contents: read
 
-    services:
-      vault:
-        image: vault:1.15.0
-        ports:
-          - 8200:8200
-        env:
-          VAULT_DEV_ROOT_TOKEN_ID: root-token
-        options: >-
-          --health-cmd="vault status"
-          --health-interval=5s
-          --health-timeout=2s
-          --health-retries=3
-        command: server -dev -dev-root-token-id=root-token
-
     env:
       VAULT_ADDR: http://127.0.0.1:8200
       VAULT_TOKEN: root-token
@@ -38,6 +24,11 @@ jobs:
           unzip vault.zip
           sudo mv vault /usr/local/bin/
           vault --version
+
+      - name: 🚀 Start Vault dev server
+        run: |
+          vault server -dev -dev-root-token-id=root-token > vault.log 2>&1 &
+          sleep 5
 
       - name: 🧾 Checkout code
         uses: actions/checkout@v3
