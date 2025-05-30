@@ -10,28 +10,45 @@ jobs:
   vaulted-ci:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write        
+      id-token: write
       contents: read
+
+    services:
+      vault:
+        image: vault:1.15.0
+        ports:
+          - 8200:8200
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: root-token
+        options: >-
+          --health-cmd="vault status"
+          --health-interval=5s
+          --health-timeout=2s
+          --health-retries=3
+        command: server -dev -dev-root-token-id=root-token
+
+    env:
+      VAULT_ADDR: http://127.0.0.1:8200
+      VAULT_TOKEN: root-token
 
     steps:
       - name: 🛠️ Install Vault CLI
         run: |
-            curl -fsSL https://releases.hashicorp.com/vault/1.15.4/vault_1.15.4_linux_amd64.zip -o vault.zip
-            unzip vault.zip
-            sudo mv vault /usr/local/bin/
-            vault --version
+          curl -fsSL https://releases.hashicorp.com/vault/1.15.4/vault_1.15.4_linux_amd64.zip -o vault.zip
+          unzip vault.zip
+          sudo mv vault /usr/local/bin/
+          vault --version
 
       - name: 🧾 Checkout code
         uses: actions/checkout@v3
 
       - name: 🔐 Log into Vault
-        uses: hashicorp/vault-action@v2
-        with:
-          url: ${{ secrets.VAULT_ADDR }}
-          auth_method: github        
-          role: ${{ secrets.VAULT_ROLE }}
-          token: ${{ secrets.VAULT_TOKEN }}  
+        run: vault login $VAULT_TOKEN
         id: vault-login
+
+      - name: 📥 Seed demo secret in Vault
+        run: |
+          vault kv put secret/app username="demo" password="s3cr3t"
 
       - name: 📥 Get secrets from Vault
         run: |
