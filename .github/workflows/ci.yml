@@ -52,7 +52,11 @@ jobs:
           config_path: .gitleaks.toml
 
       - name: 🛠️ Build Docker image
-        run: docker build -t dummy-app:latest ./examples/dummy-app
+        run: |
+            docker build \
+            -t dummy-app:latest \
+            -f examples/dummy-app/Dockerfile \
+            examples/dummy-app
 
       - name: 🔍 Install Trivy
         run: |
