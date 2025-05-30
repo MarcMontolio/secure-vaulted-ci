@@ -39,6 +39,11 @@ jobs:
       - name: 🛠️ Build Docker image
         run: docker build -t dummy-app:latest ./examples/dummy-app
 
+      - name: 🔍 Install Trivy
+        uses: aquasecurity/setup-trivy@v0.14.1
+        with:
+          version: latest
+
       - name: 🔍 Scan image with Trivy
         uses: aquasecurity/trivy-action@v0.14.1
         with:
