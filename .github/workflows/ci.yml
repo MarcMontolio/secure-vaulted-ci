@@ -1,4 +1,4 @@
-name: 🔐 Secure Vaulted CI
+¡name: 🔐 Secure Vaulted CI
 
 on:
   push:
@@ -40,15 +40,12 @@ jobs:
         run: docker build -t dummy-app:latest ./examples/dummy-app
 
       - name: 🔍 Install Trivy
-        uses: aquasecurity/setup-trivy@v0.63.0
-        with:
-          version: latest
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin latest
 
       - name: 🔍 Scan image with Trivy
-        uses: aquasecurity/trivy-action@v0.63.0
-        with:
-          image-ref: dummy-app:latest
-          format: 'table'
+        run: |
+          trivy image --format table dummy-app:latest
 
       - name: 🐳 Run application health check
         run: |
