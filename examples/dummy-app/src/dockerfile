@@ -1,0 +1,13 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+COPY src/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src/ .
+
+# Secrets like creds.username/password should be mounted as /run/secrets/{username,password}
+EXPOSE 8080
+
+CMD ["python", "app.py"]

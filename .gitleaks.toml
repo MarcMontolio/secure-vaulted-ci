@@ -1,0 +1,15 @@
+# .gitleaks.toml
+
+title = "Gitleaks config for secure-vaulted-ci"
+
+[[rules]]
+id = "Generic API Key"
+description = "Looks for generic API keys or secrets that follow common naming patterns"
+regex = '''(?i)(apikey|api_key|secret)[\s:=]+"?[0-9A-Za-z\-_]{16,}"?'''
+tags = ["key", "generic"]
+
+[[rules]]
+id = "Vault Token"
+description = "Catches HashiCorp Vault tokens that match the standard 's.' prefix format"
+regex = '''\bs\.[A-Za-z0-9_=\-]{20,}\b'''
+tags = ["vault", "token"]

@@ -22,7 +22,7 @@ jobs:
         uses: hashicorp/vault-action@v2
         with:
           url: ${{ secrets.VAULT_ADDR }}
-          auth_method: github  # or approle, depending on setup
+          auth_method: github        # or approle, depending on setup
           role: ${{ secrets.VAULT_ROLE }}
           token: ${{ secrets.VAULT_TOKEN }}  # optional if using token
         id: vault-login
@@ -46,7 +46,10 @@ jobs:
           image-ref: dummy-app:latest
           format: 'table'
 
-      - name: 🧪 Run fake app tests
+      - name: 🐳 Run application health check
         run: |
-          echo "Simulating app launch with credentials..."
-          cat creds.username creds.password
+          docker run --rm \
+            --secret id=username,src=creds.username \
+            --secret id=password,src=creds.password \
+            dummy-app:latest \
+            curl -f http://localhost:8080/health
