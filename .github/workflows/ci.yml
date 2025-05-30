@@ -1,4 +1,4 @@
-¡name: 🔐 Secure Vaulted CI
+name: 🔐 Secure Vaulted CI
 
 on:
   push:
