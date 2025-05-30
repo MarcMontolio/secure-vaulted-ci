@@ -68,8 +68,15 @@ jobs:
 
       - name: 🐳 Run application health check
         run: |
-          docker run --rm \
+          # Start the container with port mapping and secret file mounts
+          docker run -d --name test-app \
             -v "${{ github.workspace }}/creds.username:/run/secrets/username:ro" \
             -v "${{ github.workspace }}/creds.password:/run/secrets/password:ro" \
-            dummy-app:latest \
-            curl -f http://localhost:8080/health
+            -p 8080:8080 \
+            dummy-app:latest
+
+          sleep 5
+
+          curl --fail http://localhost:8080/health
+
+          docker rm -f test-app
