@@ -1,0 +1,55 @@
+name: 🔐 Secure Vaulted CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  vaulted-ci:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write        
+      contents: read
+      secrets: read
+
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🔐 Log into Vault
+        uses: hashicorp/vault-action@v2
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          auth_method: github        
+          role: ${{ secrets.VAULT_ROLE }}
+          token: ${{ secrets.VAULT_TOKEN }}  
+        id: vault-login
+
+      - name: 📥 Get secrets from Vault
+        run: |
+          vault kv get -field=username secret/app > ./creds.username
+          vault kv get -field=password secret/app > ./creds.password
+
+      - name: 🕵️ Run Gitleaks
+        uses: zricethezav/gitleaks-action@v2
+        with:
+          config_path: .gitleaks.toml
+
+      - name: 🛠️ Build Docker image
+        run: docker build -t dummy-app:latest ./examples/dummy-app
+
+      - name: 🔍 Scan image with Trivy
+        uses: aquasecurity/trivy-action@v0.9.1
+        with:
+          image-ref: dummy-app:latest
+          format: 'table'
+
+      - name: 🐳 Run application health check
+        run: |
+          docker run --rm \
+            --secret id=username,src=creds.username \
+            --secret id=password,src=creds.password \
+            dummy-app:latest \
+            curl -f http://localhost:8080/health
